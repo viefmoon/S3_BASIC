@@ -7,7 +7,6 @@
 #include <BLEAdvertising.h>
 #include <BLECharacteristic.h>
 #include <ArduinoJson.h>
-#include "clsPCA9555.h"
 #include "config.h"
 #include "config_manager.h"
 #include "debug.h"

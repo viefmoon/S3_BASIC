@@ -11,7 +11,6 @@
 #include "esp_sleep.h"
 #include "driver/gpio.h"
 #include "PowerManager.h"
-#include "clsPCA9555.h"
 #include "config.h"
 #include <RadioLib.h>
 #include <SPI.h>
@@ -23,7 +22,6 @@ public:
      * @brief Configura y entra en modo deep sleep.
      * @param timeToSleep Tiempo en segundos para permanecer en deep sleep
      * @param powerManager Referencia al gestor de energía
-     * @param ioExpander Referencia al expansor de I/O
      * @param radio Puntero al módulo de radio LoRa
      * @param node Referencia al nodo LoRaWAN para guardar sesión
      * @param LWsession Buffer para almacenar la sesión LoRaWAN
@@ -31,7 +29,6 @@ public:
      */
     static void goToDeepSleep(uint32_t timeToSleep, 
                              PowerManager& powerManager,
-                             PCA9555& ioExpander,
                              SX1262* radio,
                              LoRaWANNode& node,
                              uint8_t* LWsession,

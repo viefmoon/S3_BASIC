@@ -5,7 +5,6 @@
 #include <vector>
 #include "sensor_types.h"
 #include <ESP32Time.h>
-#include "clsPCA9555.h"
 #include "PowerManager.h"
 #include "MAX31865.h"
 #include <OneWire.h>
@@ -16,7 +15,6 @@
 
 // Variables y objetos globales declarados en main.cpp
 extern ESP32Time rtc;
-extern PCA9555 ioExpander;
 extern PowerManager powerManager;
 extern SPIClass spi;
 extern SPISettings spiAdcSettings;

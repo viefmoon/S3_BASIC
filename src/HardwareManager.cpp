@@ -6,7 +6,7 @@
 #include "HardwareManager.h"
 #include "debug.h"
 // time execution < 10 ms
-bool HardwareManager::initHardware(PCA9555& ioExpander, PowerManager& powerManager, SHT31& sht30Sensor, SPIClass& spi, const std::vector<SensorConfig>& enabledNormalSensors) {
+bool HardwareManager::initHardware(PowerManager& powerManager, SHT31& sht30Sensor, SPIClass& spi, const std::vector<SensorConfig>& enabledNormalSensors) {
     // Configurar GPIO one wire con pull-up
     pinMode(ONE_WIRE_BUS, INPUT_PULLUP);
     
@@ -32,12 +32,6 @@ bool HardwareManager::initHardware(PCA9555& ioExpander, PowerManager& powerManag
         sht30Sensor.reset();
     }
     
-    //Inicializar PCA9555 para expansión de I/O
-    if (!ioExpander.begin()) {
-        DEBUG_PRINTLN("Error al inicializar PCA9555");
-        return false;
-    }
-    
     // Inicializar los pines de selección SPI (SS)
     initializeSPISSPins();
     
@@ -56,8 +50,7 @@ void HardwareManager::initializeSPISSPins() {
     pinMode(PT100_CS_PIN, OUTPUT);
     digitalWrite(PT100_CS_PIN, HIGH);
 
-    // Inicializar SS del ADC conectado al expansor
-    extern PCA9555 ioExpander;
-    ioExpander.pinMode(ADS124S08_CS_PIN, OUTPUT);
-    ioExpander.digitalWrite(ADS124S08_CS_PIN, HIGH);
+    // Inicializar SS del ADC como pin nativo
+    pinMode(ADS124S08_CS_PIN, OUTPUT);
+    digitalWrite(ADS124S08_CS_PIN, HIGH);
 }

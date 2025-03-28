@@ -48,12 +48,11 @@ std::vector<SensorConfig> enabledNormalSensors;
 std::vector<ModbusSensorConfig> enabledModbusSensors;
 
 ESP32Time rtc;
-PCA9555 ioExpander(I2C_ADDRESS_PCA9555, I2C_SDA_PIN, I2C_SCL_PIN);
 PowerManager powerManager;
 
 SPIClass spi(FSPI);
 SPISettings spiAdcSettings(SPI_ADC_CLOCK, MSBFIRST, SPI_MODE1);
-ADS124S08 ADC(ioExpander, spi, spiAdcSettings);
+ADS124S08 ADC(spi, spiAdcSettings);
 SPISettings spiRtdSettings(SPI_RTD_CLOCK, MSBFIRST, SPI_MODE1);
 SPISettings spiRadioSettings(SPI_RADIO_CLOCK, MSBFIRST, SPI_MODE0);
 
@@ -96,9 +95,9 @@ void setup() {
     enabledModbusSensors = ConfigManager::getEnabledModbusSensorConfigs();
 
     // Inicialización de hardware
-    if (!HardwareManager::initHardware(ioExpander, powerManager, sht30Sensor, spi, enabledNormalSensors)) {
+    if (!HardwareManager::initHardware(powerManager, sht30Sensor, spi, enabledNormalSensors)) {
         DEBUG_PRINTLN("Error en la inicialización del hardware");
-        SleepManager::goToDeepSleep(timeToSleep, powerManager, ioExpander, &radio, node, LWsession, spi);
+        SleepManager::goToDeepSleep(timeToSleep, powerManager, &radio, node, LWsession, spi);
     }
 
     // Configuración de pines de modo config
@@ -127,7 +126,7 @@ void setup() {
     int16_t state = radio.begin();
     if (state != RADIOLIB_ERR_NONE) {
         DEBUG_PRINTF("Error iniciando radio: %d\n", state);
-        SleepManager::goToDeepSleep(timeToSleep, powerManager, ioExpander, &radio, node, LWsession, spi);
+        SleepManager::goToDeepSleep(timeToSleep, powerManager, &radio, node, LWsession, spi);
     }
 
     // Activar LoRaWAN
@@ -135,7 +134,7 @@ void setup() {
     if (state != RADIOLIB_LORAWAN_NEW_SESSION && 
         state != RADIOLIB_LORAWAN_SESSION_RESTORED) {
         DEBUG_PRINTF("Error activando LoRaWAN o sincronizando RTC: %d\n", state);
-        SleepManager::goToDeepSleep(timeToSleep, powerManager, ioExpander, &radio, node, LWsession, spi);
+        SleepManager::goToDeepSleep(timeToSleep, powerManager, &radio, node, LWsession, spi);
     }
 }
 
@@ -162,5 +161,5 @@ void loop() {
     delay(10);
 
     // Dormir
-    SleepManager::goToDeepSleep(timeToSleep, powerManager, ioExpander, &radio, node, LWsession, spi);
+    SleepManager::goToDeepSleep(timeToSleep, powerManager, &radio, node, LWsession, spi);
 }
