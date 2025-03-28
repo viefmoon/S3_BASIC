@@ -9,7 +9,7 @@
 #include <Preferences.h>
 #include "debug.h"
 #include <RadioLib.h>
-#include <RTClib.h>
+#include <ESP32Time.h>
 #include "utilities.h"  // Incluido para acceder a formatFloatTo3Decimals
 #include "config.h"     // Incluido para acceder a MAX_PAYLOAD
 #include "sensor_types.h"  // Incluido para acceder a ModbusSensorReading
@@ -23,7 +23,7 @@ SX1262* LoRaManager::radioModule = nullptr;
 // Referencias externas
 extern RTC_DATA_ATTR uint8_t LWsession[RADIOLIB_LORAWAN_SESSION_BUF_SIZE];
 extern RTC_DATA_ATTR uint16_t bootCountSinceUnsuccessfulJoin;
-extern RTC_DS3231 rtc;
+extern ESP32Time rtc;
 
 int16_t LoRaManager::begin(SX1262* radio, const LoRaWANBand_t* region, uint8_t subBand) {
     radioModule = radio;
@@ -124,14 +124,12 @@ int16_t LoRaManager::lwActivate(LoRaWANNode& node) {
                         int16_t dtState = node.getMacDeviceTimeAns(&unixEpoch, &fraction, true);
                         if (dtState == RADIOLIB_ERR_NONE) {
                             DEBUG_PRINTF("DeviceTime recibido: epoch = %lu s, fraction = %u\n", unixEpoch, fraction);
-                            // Convertir el tiempo unix a DateTime
-                            DateTime serverTime(unixEpoch);
                             
-                            // Ajustar el RTC con el tiempo del servidor
-                            rtc.adjust(serverTime);
+                            // Configurar el RTC interno con el tiempo Unix
+                            rtc.setTime(unixEpoch);
                             
                             // Verificar si se ajustó correctamente
-                            if (abs((int32_t)rtc.now().unixtime() - (int32_t)unixEpoch) < 10) {
+                            if (abs((int32_t)rtc.getEpoch() - (int32_t)unixEpoch) < 10) {
                                 DEBUG_PRINTLN("RTC actualizado exitosamente con tiempo del servidor");
                                 rtcUpdated = true; // Marca como actualizado para salir del bucle
                             } else {
@@ -365,22 +363,37 @@ size_t LoRaManager::createDelimitedPayload(
 
 /**
  * @brief Envía el payload de sensores estándar usando formato delimitado.
+ * @param readings Vector con todas las lecturas de sensores.
+ * @param node Referencia al nodo LoRaWAN
+ * @param deviceId ID del dispositivo
+ * @param stationId ID de la estación
+ * @param rtc Referencia al RTC para obtener timestamp
  */
-void LoRaManager::sendDelimitedPayload(const std::vector<SensorReading>& readings, 
-                                     LoRaWANNode& node,
-                                     const String& deviceId, 
-                                     const String& stationId, 
-                                     RTC_DS3231& rtc) 
+void LoRaManager::sendDelimitedPayload(
+    const std::vector<SensorReading>& readings, 
+    LoRaWANNode& node,
+    const String& deviceId, 
+    const String& stationId, 
+    ESP32Time& rtc) 
 {
     char payloadBuffer[MAX_LORA_PAYLOAD + 1];
     
     // Crear payload delimitado
     float battery = BatterySensor::readVoltage();
-    uint32_t timestamp = rtc.now().unixtime();
-    
-    size_t payloadLength = createDelimitedPayload(
-        readings, deviceId, stationId, battery, timestamp, 
-        payloadBuffer, sizeof(payloadBuffer)
+
+    // Obtener timestamp
+    uint32_t timestamp = rtc.getEpoch();
+
+    // Crear payload
+    char buffer[MAX_PAYLOAD];
+    size_t payloadSize = createDelimitedPayload(
+        readings, 
+        deviceId, 
+        stationId, 
+        battery, 
+        timestamp, 
+        buffer, 
+        sizeof(buffer)
     );
     
     DEBUG_PRINTF("Enviando payload delimitado con tamaño %d bytes\n", payloadLength);
@@ -412,23 +425,40 @@ void LoRaManager::sendDelimitedPayload(const std::vector<SensorReading>& reading
 #if defined(DEVICE_TYPE_ANALOGIC) || defined(DEVICE_TYPE_MODBUS)
 /**
  * @brief Envía el payload de sensores estándar y Modbus usando formato delimitado.
+ * @param normalReadings Vector con lecturas de sensores estándar
+ * @param modbusReadings Vector con lecturas de sensores Modbus
+ * @param node Referencia al nodo LoRaWAN
+ * @param deviceId ID del dispositivo
+ * @param stationId ID de la estación
+ * @param rtc Referencia al RTC para obtener timestamp
  */
-void LoRaManager::sendDelimitedPayload(const std::vector<SensorReading>& normalReadings, 
-                                     const std::vector<ModbusSensorReading>& modbusReadings,
-                                     LoRaWANNode& node,
-                                     const String& deviceId, 
-                                     const String& stationId, 
-                                     RTC_DS3231& rtc)
+void LoRaManager::sendDelimitedPayload(
+    const std::vector<SensorReading>& normalReadings, 
+    const std::vector<ModbusSensorReading>& modbusReadings,
+    LoRaWANNode& node,
+    const String& deviceId, 
+    const String& stationId, 
+    ESP32Time& rtc)
 {
     char payloadBuffer[MAX_LORA_PAYLOAD + 1];
     
     // Crear payload delimitado
     float battery = BatterySensor::readVoltage();
-    uint32_t timestamp = rtc.now().unixtime();
-    
-    size_t payloadLength = createDelimitedPayload(
-        normalReadings, modbusReadings, deviceId, stationId, battery, timestamp, 
-        payloadBuffer, sizeof(payloadBuffer)
+
+    // Obtener timestamp
+    uint32_t timestamp = rtc.getEpoch();
+
+    // Crear payload
+    char buffer[MAX_PAYLOAD];
+    size_t payloadSize = createDelimitedPayload(
+        normalReadings, 
+        modbusReadings, 
+        deviceId, 
+        stationId, 
+        battery, 
+        timestamp, 
+        buffer, 
+        sizeof(buffer)
     );
     
     DEBUG_PRINTF("Enviando payload delimitado con tamaño %d bytes\n", payloadLength);

@@ -13,7 +13,7 @@
 #include "PowerManager.h"
 #include "MAX31865.h"
 #include <RadioLib.h>
-#include <RTClib.h>
+#include <ESP32Time.h>
 #include "sensor_types.h"
 #include "SensorManager.h"
 #include "nvs_flash.h"
@@ -47,7 +47,7 @@ unsigned long setupStartTime; // Variable para almacenar el tiempo de inicio
 std::vector<SensorConfig> enabledNormalSensors;
 std::vector<ModbusSensorConfig> enabledModbusSensors;
 
-RTC_DS3231 rtc;
+ESP32Time rtc;
 PCA9555 ioExpander(I2C_ADDRESS_PCA9555, I2C_SDA_PIN, I2C_SCL_PIN);
 PowerManager powerManager(ioExpander);
 
@@ -110,9 +110,13 @@ void setup() {
         return;
     }
 
-    // Inicializar RTC
-    if (!rtc.begin()) {
-        DEBUG_PRINTLN("No se pudo encontrar RTC");
+    // Ya no es necesario inicializar el RTC externo, el interno ya está disponible
+    // Comprobar si tenemos un timestamp válido
+    struct tm timeinfo;
+    if (!getLocalTime(&timeinfo)) {
+        DEBUG_PRINTLN("RTC no está configurado. Estableciendo una hora predeterminada.");
+        // Establecer una fecha/hora predeterminada si el RTC no está configurado
+        rtc.setTime(0, 0, 0, 1, 1, 2023);  // 01/01/2023 00:00:00
     }
 
     // Inicializar sensores

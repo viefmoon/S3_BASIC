@@ -14,7 +14,7 @@
 #include "config_manager.h"
 #include "utilities.h"
 #include "sensor_types.h"
-#include <RTClib.h>
+#include <ESP32Time.h>
 #include "SensorManager.h"
 
 // Código de error personalizado para fallo en sincronización RTC
@@ -96,7 +96,7 @@ public:
                                    LoRaWANNode& node,
                                    const String& deviceId, 
                                    const String& stationId, 
-                                   RTC_DS3231& rtc);
+                                   ESP32Time& rtc);
 
 #if defined(DEVICE_TYPE_ANALOGIC) || defined(DEVICE_TYPE_MODBUS)
     /**
@@ -113,7 +113,7 @@ public:
                                    LoRaWANNode& node,
                                    const String& deviceId, 
                                    const String& stationId, 
-                                   RTC_DS3231& rtc);
+                                   ESP32Time& rtc);
 #endif
 
     /**
