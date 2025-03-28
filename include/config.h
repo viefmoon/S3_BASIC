@@ -25,13 +25,13 @@
 #define SPI_RADIO_CLOCK     100000
 
 // PT100
-#define PT100_CS_PIN        P03
+#define PT100_CS_PIN        12
 
 // Modo Config
 #define CONFIG_PIN          2
 #define CONFIG_TRIGGER_TIME 5000
 #define CONFIG_TIMEOUT      30000
-#define CONFIG_LED_PIN      P11
+#define CONFIG_LED_PIN      9
 #define CONFIG_BLE_WAIT_TIMEOUT     60000   // Tiempo máximo de espera para conexión BLE (60 segundos)
 #define CONFIG_BLE_MAX_CONN_TIME    300000  // Tiempo máximo de conexión BLE activa (5 minutos)
 
@@ -134,13 +134,13 @@ const double conversionFactor = (R1 + R2) / R1;
 #define SPI_RADIO_CLOCK     100000
 
 // PT100
-#define PT100_CS_PIN        P03
+#define PT100_CS_PIN        12
 
 // Modo Config
 #define CONFIG_PIN          2
 #define CONFIG_TRIGGER_TIME 5000
 #define CONFIG_TIMEOUT      30000
-#define CONFIG_LED_PIN      P11
+#define CONFIG_LED_PIN      9
 #define CONFIG_BLE_WAIT_TIMEOUT     60000   // Tiempo máximo de espera para conexión BLE (60 segundos)
 #define CONFIG_BLE_MAX_CONN_TIME    300000  // Tiempo máximo de conexión BLE activa (5 minutos)
 
@@ -229,9 +229,8 @@ const double conversionFactor = (R1 + R2) / R1;
 #define JSON_DOC_SIZE_LARGE   2048
 
 // Batería
-#define POWER_3V3_PIN           P00
-#define POWER_12V_PIN           P01
-#define POWER_2V5_PIN           P02
+#define POWER_3V3_PIN           1
+#define POWER_12V_PIN           2
 #define POWER_STABILIZE_DELAY   1
 
 // ADS124S08
@@ -362,7 +361,7 @@ const double conversionFactor = (R1 + R2) / R1;
 #define SPI_RADIO_CLOCK     100000
 
 // PT100
-#define PT100_CS_PIN        P03
+#define PT100_CS_PIN        12
 
 // FlowSensor
 #define FLOW_SENSOR_PIN     0
@@ -374,7 +373,7 @@ const double conversionFactor = (R1 + R2) / R1;
 #define CONFIG_PIN          2
 #define CONFIG_TRIGGER_TIME 5000
 #define CONFIG_TIMEOUT      30000
-#define CONFIG_LED_PIN      P11
+#define CONFIG_LED_PIN      9
 #define CONFIG_BLE_WAIT_TIMEOUT     60000   // Tiempo máximo de espera para conexión BLE (60 segundos)
 #define CONFIG_BLE_MAX_CONN_TIME    300000  // Tiempo máximo de conexión BLE activa (5 minutos)
 

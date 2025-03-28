@@ -3,8 +3,7 @@
 
 #include <stdint.h>
 #include <SPI.h>
-#include "clsPCA9555.h"
-
+#include "Arduino.h"
 
 #define MAX31865_FAULT_HIGH_THRESHOLD  ( 1 << 7 )
 #define MAX31865_FAULT_LOW_THRESHOLD   ( 1 << 6 )
@@ -61,23 +60,11 @@ public:
   enum ptd_type { RTD_PT100, RTD_PT1000 };
 
   /**
-   * @brief Constructor para usar PCA9555 como CS.
+   * @brief Constructor usando pin nativo de microcontrolador como CS.
    * @param type         Tipo de RTD (PT100/PT1000)
    * @param spi          Referencia al objeto SPI que usarás (por ej. spiCustom)
    * @param spiSettings  Configuración de SPI (frecuencia, MSB/LSB, modo, etc.)
-   * @param pca          Referencia a tu PCA9555
-   * @param pcaPinCS     Pin del PCA que actúa como CS
-   */
-  MAX31865_RTD(
-      ptd_type type,
-      SPIClass& spi,
-      SPISettings& spiSettings,
-      PCA9555& pca,
-      uint8_t pcaPinCS
-  );
-
-    /**
-   * @brief Constructor alternativo, usando pin nativo de microcontrolador como CS.
+   * @param csPin        Pin CS del microcontrolador
    */
   MAX31865_RTD(
       ptd_type type,
@@ -102,10 +89,10 @@ public:
     return( (double)raw_resistance( ) * rtd_rref / (double)RTD_ADC_RESOLUTION );
   }
 
-  // Nuevo método para medición única
+  // Método para medición única
   double singleMeasurement(uint16_t conversionDelayMs = 100);
 
-  // Agregar el método begin
+  // Método para inicializar
   bool begin();
 
 private:
@@ -117,12 +104,8 @@ private:
   SPIClass* _spi;           ///< Puntero a la clase SPI
   SPISettings* _spiSettings;   ///< Puntero a SPISettings
 
-  /* PCA9555 / Pin CS */
-  PCA9555* _pca = nullptr; 
-  uint8_t  _pcaPinCS = 0xFF;
-  bool     _usePCA   = false;
-
-  uint8_t  _csPinMCU = 0xFF;     ///< CS pin nativo (si no usamos PCA)
+  /* Pin CS */
+  uint8_t  _csPinMCU;     ///< CS pin nativo
 
   /* Config RTD */
   ptd_type type;

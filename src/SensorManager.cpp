@@ -32,8 +32,6 @@ void SensorManager::beginSensors(const std::vector<SensorConfig>& enabledNormalS
     // Encender alimentación 3.3V
     powerManager.power3V3On();
     
-    // Encender alimentación 2.5V solo para dispositivos ANALOGIC
-    powerManager.power2V5On();
 
     // Inicializar RTD y configurarlo
     rtd.begin();

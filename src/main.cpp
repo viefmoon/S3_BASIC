@@ -49,7 +49,7 @@ std::vector<ModbusSensorConfig> enabledModbusSensors;
 
 ESP32Time rtc;
 PCA9555 ioExpander(I2C_ADDRESS_PCA9555, I2C_SDA_PIN, I2C_SCL_PIN);
-PowerManager powerManager(ioExpander);
+PowerManager powerManager;
 
 SPIClass spi(FSPI);
 SPISettings spiAdcSettings(SPI_ADC_CLOCK, MSBFIRST, SPI_MODE1);
@@ -57,7 +57,7 @@ ADS124S08 ADC(ioExpander, spi, spiAdcSettings);
 SPISettings spiRtdSettings(SPI_RTD_CLOCK, MSBFIRST, SPI_MODE1);
 SPISettings spiRadioSettings(SPI_RADIO_CLOCK, MSBFIRST, SPI_MODE0);
 
-MAX31865_RTD rtd(MAX31865_RTD::RTD_PT100, spi, spiRtdSettings, ioExpander, PT100_CS_PIN);
+MAX31865_RTD rtd(MAX31865_RTD::RTD_PT100, spi, spiRtdSettings, PT100_CS_PIN);
 SHT31 sht30Sensor(0x44, &Wire);
 
 SX1262 radio = new Module(LORA_NSS_PIN, LORA_DIO1_PIN, LORA_RST_PIN, LORA_BUSY_PIN, spi, spiRadioSettings);
@@ -103,10 +103,10 @@ void setup() {
 
     // Configuración de pines de modo config
     pinMode(CONFIG_PIN, INPUT);
-    ioExpander.pinMode(CONFIG_LED_PIN, OUTPUT);
+    pinMode(CONFIG_LED_PIN, OUTPUT);
 
     // Modo configuración BLE
-    if (BLEHandler::checkConfigMode(ioExpander)) {
+    if (BLEHandler::checkConfigMode()) {
         return;
     }
 
@@ -144,7 +144,7 @@ void setup() {
 //--------------------------------------------------------------------------------------------
 void loop() {
     // Verificar si se mantiene presionado para modo config
-    if (BLEHandler::checkConfigMode(ioExpander)) {
+    if (BLEHandler::checkConfigMode()) {
         return;
     }
 

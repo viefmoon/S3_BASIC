@@ -52,11 +52,12 @@ void HardwareManager::initializeSPISSPins() {
     pinMode(LORA_NSS_PIN, OUTPUT);
     digitalWrite(LORA_NSS_PIN, HIGH);
 
-    // Inicializar SS conectados al expansor
-    extern PCA9555 ioExpander;
-    ioExpander.pinMode(PT100_CS_PIN, OUTPUT); // ss de p100
-    ioExpander.digitalWrite(PT100_CS_PIN, HIGH);
+    // Inicializar SS de PT100 como pin nativo
+    pinMode(PT100_CS_PIN, OUTPUT);
+    digitalWrite(PT100_CS_PIN, HIGH);
 
-    ioExpander.pinMode(ADS124S08_CS_PIN, OUTPUT); // ss del adc
+    // Inicializar SS del ADC conectado al expansor
+    extern PCA9555 ioExpander;
+    ioExpander.pinMode(ADS124S08_CS_PIN, OUTPUT);
     ioExpander.digitalWrite(ADS124S08_CS_PIN, HIGH);
 }

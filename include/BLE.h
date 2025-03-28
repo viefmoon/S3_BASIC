@@ -24,10 +24,9 @@ public:
     
     /**
      * @brief Verifica si se mantuvo presionado el botón de configuración y activa el modo BLE.
-     * @param ioExpander Referencia al expansor de I/O para controlar el LED
      * @return true si se activó el modo BLE, false en caso contrario
      */
-    static bool checkConfigMode(PCA9555& ioExpander);
+    static bool checkConfigMode();
 
     /**
      * @brief Inicializa el BLE con el nombre del dispositivo basado en el devEUI
@@ -45,9 +44,8 @@ public:
 
     /**
      * @brief Ejecuta el bucle de parpadeo del LED en modo configuración
-     * @param ioExpander Referencia al expansor de I/O para controlar el LED
      */
-    static void runConfigLoop(PCA9555& ioExpander);
+    static void runConfigLoop();
 
 private:
     // Callback para eventos del servidor BLE

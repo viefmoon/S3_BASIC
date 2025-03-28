@@ -1,25 +1,5 @@
 #include "MAX31865.h"
-#include <math.h>   // Para sqrt
-
-/**
- * @brief Constructor con PCA9555.
- */
-MAX31865_RTD::MAX31865_RTD(
-    ptd_type type,
-    SPIClass& spi,
-    SPISettings& spiSettings,
-    PCA9555& pca,
-    uint8_t pcaPinCS
-)
-{
-  _spi = &spi;
-  _spiSettings = &spiSettings;
-  this->type = type;
-  this->_usePCA = true;
-  this->_pca = &pca;
-  this->_pcaPinCS = pcaPinCS;
-  this->_csPinMCU = 0xFF;
-}
+#include <math.h>   // Para sqrt#i
 
 /**
  * @brief Constructor con pin nativo de MCU.
@@ -34,9 +14,6 @@ MAX31865_RTD::MAX31865_RTD(
   _spi = &spi;
   _spiSettings = &spiSettings;
   this->type = type;
-  this->_usePCA = false;
-  this->_pca = nullptr;
-  this->_pcaPinCS = 0xFF;
   this->_csPinMCU = csPin;
 }
 
@@ -156,20 +133,12 @@ double MAX31865_RTD::temperature() const
 }
 
 void MAX31865_RTD::setCSLow() {
-  if (_usePCA && _pca) {
-    _pca->digitalWrite(_pcaPinCS, LOW);
-    delayMicroseconds(5);
-  } else {
-    digitalWrite(_csPinMCU, LOW);
-  }
+  digitalWrite(_csPinMCU, LOW);
+  delayMicroseconds(5);
 }
 
 void MAX31865_RTD::setCSHigh() {
-  if (_usePCA && _pca) {
-    _pca->digitalWrite(_pcaPinCS, HIGH);
-  } else {
-    digitalWrite(_csPinMCU, HIGH);
-  }
+  digitalWrite(_csPinMCU, HIGH);
 }
 
 double MAX31865_RTD::singleMeasurement(uint16_t conversionDelayMs) {
@@ -197,14 +166,9 @@ double MAX31865_RTD::singleMeasurement(uint16_t conversionDelayMs) {
     return temperature();
 }
 
-// Nuevo método begin para inicializar los pines
+// Método begin para inicializar los pines
 bool MAX31865_RTD::begin() {
-    if (_usePCA && _pca) {
-        _pca->pinMode(_pcaPinCS, OUTPUT);
-        _pca->digitalWrite(_pcaPinCS, HIGH);
-    } else {
-        pinMode(_csPinMCU, OUTPUT);
-        digitalWrite(_csPinMCU, HIGH);
-    }
+    pinMode(_csPinMCU, OUTPUT);
+    digitalWrite(_csPinMCU, HIGH);
     return true;
 }

@@ -25,7 +25,7 @@ void BLEHandler::ServerCallbacks::onDisconnect(BLEServer* pServer) {
 }
 
 // Implementación de los métodos de BLEHandler
-bool BLEHandler::checkConfigMode(PCA9555& ioExpander) {
+bool BLEHandler::checkConfigMode() {
     if (digitalRead(CONFIG_PIN) == LOW) {
         unsigned long startTime = millis();
         while (digitalRead(CONFIG_PIN) == LOW) {
@@ -55,7 +55,7 @@ bool BLEHandler::checkConfigMode(PCA9555& ioExpander) {
                 pAdvertising->start();
                 
                 // Entrar en bucle de configuración
-                runConfigLoop(ioExpander);
+                runConfigLoop();
                 return true;
             }
         }
@@ -71,7 +71,7 @@ BLEServer* BLEHandler::initBLE(const String& devEUI) {
     return pServer;
 }
 
-void BLEHandler::runConfigLoop(PCA9555& ioExpander) {
+void BLEHandler::runConfigLoop() {
     unsigned long startTime = millis();
     const unsigned long timeout = CONFIG_BLE_WAIT_TIMEOUT; // Usar constante de config.h
 
@@ -101,13 +101,13 @@ void BLEHandler::runConfigLoop(PCA9555& ioExpander) {
         // Control del LED según estado de conexión
         if (BLEHandler::isConnected) {
             // Cliente conectado, LED fijo
-            ioExpander.digitalWrite(CONFIG_LED_PIN, HIGH);
+            digitalWrite(CONFIG_LED_PIN, HIGH);
             delay(1000);
         } else {
             // Esperando conexión, LED parpadeando
-            ioExpander.digitalWrite(CONFIG_LED_PIN, HIGH);
+            digitalWrite(CONFIG_LED_PIN, HIGH);
             delay(250);
-            ioExpander.digitalWrite(CONFIG_LED_PIN, LOW);
+            digitalWrite(CONFIG_LED_PIN, LOW);
             delay(250);
         }
     }
