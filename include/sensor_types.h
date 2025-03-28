@@ -76,7 +76,6 @@ struct SensorConfig {
     bool enable;
 };
 
-#if defined(DEVICE_TYPE_ANALOGIC) || defined(DEVICE_TYPE_MODBUS)
 /************************************************************************
  * SECCIÓN PARA SENSORES MODBUS
  ************************************************************************/
@@ -99,6 +98,5 @@ struct ModbusSensorReading {
     SensorType type;           // Tipo de sensor Modbus
     std::vector<SubValue> subValues; // Subvalores reportados por el sensor
 };
-#endif // defined(DEVICE_TYPE_ANALOGIC) || defined(DEVICE_TYPE_MODBUS)
 
 #endif // SENSOR_TYPES_H

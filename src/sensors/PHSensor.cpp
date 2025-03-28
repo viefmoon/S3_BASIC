@@ -1,7 +1,5 @@
 #include "sensors/PHSensor.h"
 
-#ifdef DEVICE_TYPE_ANALOGIC
-
 #include <cmath>
 #include "ADS124S08.h"
 #include "AdcUtilities.h"
@@ -90,6 +88,4 @@ float PHSensor::read() {
     float pHValue = convertVoltageToPH(voltage, waterTemp);
     
     return pHValue;
-}
-
-#endif // DEVICE_TYPE_ANALOGIC 
+} 

@@ -55,9 +55,8 @@ void ConfigManager::initializeDefaultConfig() {
         writeNamespace(NAMESPACE_SYSTEM, doc);
     }
     
-#ifdef DEVICE_TYPE_ANALOGIC
     /* -------------------------------------------------------------------------
-       2. INICIALIZACIÓN DE SENSORES ANALÓGICOS (Solo para dispositivo analógico)
+       2. INICIALIZACIÓN DE SENSORES ANALÓGICOS
        ------------------------------------------------------------------------- */
     // NTC 100K: NAMESPACE_NTC100K
     {
@@ -109,7 +108,6 @@ void ConfigManager::initializeDefaultConfig() {
         doc[KEY_PH_CT] = PH_DEFAULT_TEMP;
         writeNamespace(NAMESPACE_PH, doc);
     }
-#endif
     
     /* -------------------------------------------------------------------------
        3. INICIALIZACIÓN DE SENSORES NO-MODBUS
@@ -146,7 +144,6 @@ void ConfigManager::initializeDefaultConfig() {
         writeNamespace(NAMESPACE_LORAWAN, doc);
     }
 
-#if defined(DEVICE_TYPE_MODBUS) || defined(DEVICE_TYPE_ANALOGIC)
     /* -------------------------------------------------------------------------
        5. INICIALIZACIÓN DE SENSORES MODBUS
        ------------------------------------------------------------------------- */
@@ -173,7 +170,6 @@ void ConfigManager::initializeDefaultConfig() {
         prefs.putString(NAMESPACE_SENSORS_MODBUS, jsonString.c_str());
         prefs.end();
     }
-#endif
 }
 
 void ConfigManager::getSystemConfig(bool &initialized, uint32_t &sleepTime, String &deviceId, String &stationId) {
@@ -292,7 +288,6 @@ void ConfigManager::setLoRaConfig(
 /* =========================================================================
    CONFIGURACIÓN DE SENSORES MODBUS
    ========================================================================= */
-#if defined(DEVICE_TYPE_MODBUS) || defined(DEVICE_TYPE_ANALOGIC)
 // Definición de la variable estática
 const ModbusSensorConfig ConfigManager::defaultModbusSensors[] = DEFAULT_MODBUS_SENSOR_CONFIGS;
 
@@ -349,13 +344,10 @@ std::vector<ModbusSensorConfig> ConfigManager::getEnabledModbusSensorConfigs() {
     }
     return enabled;
 }
-#endif
 
 /* =========================================================================
-   CONFIGURACIÓN DE SENSORES ANALÓGICOS (Solo para dispositivo analógico)
+   CONFIGURACIÓN DE SENSORES ANALÓGICOS
    ========================================================================= */
-#ifdef DEVICE_TYPE_ANALOGIC
-
 void ConfigManager::getNTC100KConfig(double& t1, double& r1, double& t2, double& r2, double& t3, double& r3) {
     StaticJsonDocument<JSON_DOC_SIZE_MEDIUM> doc;
     readNamespace(NAMESPACE_NTC100K, doc);
@@ -455,4 +447,3 @@ void ConfigManager::setPHConfig(float v1, float t1, float v2, float t2, float v3
     doc[KEY_PH_CT] = defaultTemp;
     writeNamespace(NAMESPACE_PH, doc);
 }
-#endif

@@ -6,8 +6,6 @@
 #include "debug.h"
 #include "config_manager.h"
 
-#ifdef DEVICE_TYPE_ANALOGIC
-
 /**
  * @brief Clase para manejar el sensor de conductividad
  */
@@ -29,7 +27,5 @@ public:
      */
     static float convertVoltageToConductivity(float voltage, float tempC);
 };
-
-#endif // DEVICE_TYPE_ANALOGIC
 
 #endif // CONDUCTIVITY_SENSOR_H 

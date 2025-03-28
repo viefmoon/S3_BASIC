@@ -2,10 +2,8 @@
 #include <Wire.h>
 #include <SPI.h>
 #include <Preferences.h>
-#if defined(DEVICE_TYPE_BASIC) || defined(DEVICE_TYPE_ANALOGIC)
 #include <OneWire.h>
 #include <DallasTemperature.h>
-#endif
 #include <vector>
 #include <ArduinoJson.h>
 #include <cmath>
@@ -47,19 +45,15 @@ unsigned long setupStartTime; // Variable para almacenar el tiempo de inicio
 
 // Configuraciones de sensores
 std::vector<SensorConfig> enabledNormalSensors;
-#if defined(DEVICE_TYPE_ANALOGIC) || defined(DEVICE_TYPE_MODBUS)
 std::vector<ModbusSensorConfig> enabledModbusSensors;
-#endif
 
 RTC_DS3231 rtc;
 PCA9555 ioExpander(I2C_ADDRESS_PCA9555, I2C_SDA_PIN, I2C_SCL_PIN);
 PowerManager powerManager(ioExpander);
 
 SPIClass spi(FSPI);
-#ifdef DEVICE_TYPE_ANALOGIC
 SPISettings spiAdcSettings(SPI_ADC_CLOCK, MSBFIRST, SPI_MODE1);
 ADS124S08 ADC(ioExpander, spi, spiAdcSettings);
-#endif
 SPISettings spiRtdSettings(SPI_RTD_CLOCK, MSBFIRST, SPI_MODE1);
 SPISettings spiRadioSettings(SPI_RADIO_CLOCK, MSBFIRST, SPI_MODE0);
 
@@ -69,10 +63,8 @@ SHT31 sht30Sensor(0x44, &Wire);
 SX1262 radio = new Module(LORA_NSS_PIN, LORA_DIO1_PIN, LORA_RST_PIN, LORA_BUSY_PIN, spi, spiRadioSettings);
 LoRaWANNode node(&radio, &Region, subBand);
 
-#if defined(DEVICE_TYPE_BASIC) || defined(DEVICE_TYPE_ANALOGIC)
 OneWire oneWire(ONE_WIRE_BUS);
 DallasTemperature dallasTemp(&oneWire);
-#endif
 
 RTC_DATA_ATTR uint16_t bootCount = 0;
 RTC_DATA_ATTR uint16_t bootCountSinceUnsuccessfulJoin = 0;
@@ -101,9 +93,7 @@ void setup() {
 
     // Obtener configuraciones de sensores habilitados
     enabledNormalSensors = ConfigManager::getEnabledSensorConfigs();
-#if defined(DEVICE_TYPE_ANALOGIC) || defined(DEVICE_TYPE_MODBUS)
     enabledModbusSensors = ConfigManager::getEnabledModbusSensorConfigs();
-#endif
 
     // Inicialización de hardware
     if (!HardwareManager::initHardware(ioExpander, powerManager, sht30Sensor, spi, enabledNormalSensors)) {
@@ -156,19 +146,11 @@ void loop() {
 
     // Obtener todas las lecturas de sensores (normales y Modbus)
     std::vector<SensorReading> normalReadings;
-#if defined(DEVICE_TYPE_ANALOGIC) || defined(DEVICE_TYPE_MODBUS)
     std::vector<ModbusSensorReading> modbusReadings;
     SensorManager::getAllSensorReadings(normalReadings, modbusReadings, enabledNormalSensors, enabledModbusSensors);
-#else
-    SensorManager::getAllSensorReadings(normalReadings, enabledNormalSensors);
-#endif
 
     // Usar el nuevo formato delimitado en lugar de JSON
-#if defined(DEVICE_TYPE_ANALOGIC) || defined(DEVICE_TYPE_MODBUS)
     LoRaManager::sendDelimitedPayload(normalReadings, modbusReadings, node, deviceId, stationId, rtc);
-#else
-    LoRaManager::sendDelimitedPayload(normalReadings, node, deviceId, stationId, rtc);
-#endif
 
     // Calcular y mostrar el tiempo transcurrido antes de dormir
     unsigned long elapsedTime = millis() - setupStartTime;

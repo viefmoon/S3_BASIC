@@ -1,7 +1,5 @@
 #include "sensors/HDS10Sensor.h"
 
-#ifdef DEVICE_TYPE_ANALOGIC
-
 #include <cmath>
 #include "ADS124S08.h"
 #include "AdcUtilities.h"
@@ -101,6 +99,4 @@ float HDS10Sensor::read() {
     float percentage = convertResistanceToHumidity(sensorR);
     
     return percentage;
-}
-
-#endif // DEVICE_TYPE_ANALOGIC 
+} 

@@ -2,9 +2,7 @@
 #include <Wire.h>
 #include <SPI.h>
 #include <cmath>  // Para fabs() y otras funciones matemáticas
-#if defined(DEVICE_TYPE_BASIC) || defined(DEVICE_TYPE_ANALOGIC)
 #include <DallasTemperature.h>
-#endif
 #include "MAX31865.h"
 #include "sensor_types.h"
 #include "config.h"
@@ -13,7 +11,6 @@
 #include "debug.h"
 #include "utilities.h"
 
-#ifdef DEVICE_TYPE_ANALOGIC
 #include "ADS124S08.h"
 #include "sensors/NtcManager.h"
 #include "AdcUtilities.h"
@@ -21,14 +18,11 @@
 #include "sensors/ConductivitySensor.h"
 #include "sensors/HDS10Sensor.h"
 extern ADS124S08 ADC;
-#endif
 
 // Inclusión de nuevos sensores
 #include "sensors/RTDSensor.h"
 #include "sensors/SHT30Sensor.h"
-#if defined(DEVICE_TYPE_BASIC) || defined(DEVICE_TYPE_ANALOGIC)
 #include "sensors/DS18B20Sensor.h"
-#endif
 
 // -------------------------------------------------------------------------------------
 // Métodos de la clase SensorManager
@@ -38,10 +32,8 @@ void SensorManager::beginSensors(const std::vector<SensorConfig>& enabledNormalS
     // Encender alimentación 3.3V
     powerManager.power3V3On();
     
-#ifdef DEVICE_TYPE_ANALOGIC
     // Encender alimentación 2.5V solo para dispositivos ANALOGIC
     powerManager.power2V5On();
-#endif
 
     // Inicializar RTD y configurarlo
     rtd.begin();
@@ -58,7 +50,6 @@ void SensorManager::beginSensors(const std::vector<SensorConfig>& enabledNormalS
         rtd.configure(vBias, autoConvert, oneShot, threeWire, faultCycle, faultClear, filter50Hz, lowTh, highTh);
     }
 
-#if defined(DEVICE_TYPE_BASIC) || defined(DEVICE_TYPE_ANALOGIC)
     // Verificar si hay algún sensor DS18B20
     bool ds18b20SensorEnabled = false;
     for (const auto& sensor : enabledNormalSensors) {
@@ -75,10 +66,7 @@ void SensorManager::beginSensors(const std::vector<SensorConfig>& enabledNormalS
         dallasTemp.begin();
         dallasTemp.requestTemperatures();
     }
-    ////////////////////////////////////////////////////////////////
-#endif
 
-#ifdef DEVICE_TYPE_ANALOGIC
     // TIEMPO ejecución ≈ 15 ms
     ADC.begin();
     // Reset del ADC
@@ -95,8 +83,6 @@ void SensorManager::beginSensors(const std::vector<SensorConfig>& enabledNormalS
     
     // Ajustar velocidad de muestreo y modo single shot
     ADC.regWrite(DATARATE_ADDR_MASK, ADS_DR_4000 | ADS_CONVMODE_SS); // Modo single shot
-        ////////////////////////////////////////////////////////////////
-#endif
 }
 
 SensorReading SensorManager::getSensorReading(const SensorConfig &cfg) {
@@ -117,48 +103,28 @@ SensorReading SensorManager::getSensorReading(const SensorConfig &cfg) {
 float SensorManager::readSensorValue(const SensorConfig &cfg, SensorReading &reading) {
     switch (cfg.type) {
         case N100K:
-#ifdef DEVICE_TYPE_ANALOGIC
             // Usar NtcManager para obtener la temperatura
             reading.value = NtcManager::readNtc100kTemperature(cfg.configKey);
-#else
-            reading.value = NAN;
-#endif
             break;
 
         case N10K:
-#ifdef DEVICE_TYPE_ANALOGIC
             // Usar NtcManager para obtener la temperatura del NTC de 10k
             reading.value = NtcManager::readNtc10kTemperature();
-#else
-            reading.value = NAN;
-#endif
             break;
             
         case HDS10:
-#ifdef DEVICE_TYPE_ANALOGIC
             // Leer sensor HDS10 y obtener el porcentaje de humedad
             reading.value = HDS10Sensor::read();
-#else
-            reading.value = NAN;
-#endif
             break;
             
         case PH:
-#ifdef DEVICE_TYPE_ANALOGIC
             // Leer sensor de pH y obtener valor
             reading.value = PHSensor::read();
-#else
-            reading.value = NAN;
-#endif
             break;
 
         case COND:
-#ifdef DEVICE_TYPE_ANALOGIC
             // Leer sensor de conductividad y obtener valor en ppm
             reading.value = ConductivitySensor::read();
-#else
-            reading.value = NAN;
-#endif
             break;
         
         case SOILH:
@@ -169,11 +135,9 @@ float SensorManager::readSensorValue(const SensorConfig &cfg, SensorReading &rea
             reading.value = RTDSensor::read();
             break;
 
-#if defined(DEVICE_TYPE_BASIC) || defined(DEVICE_TYPE_ANALOGIC)
         case DS18B20:
             reading.value = DS18B20Sensor::read();
             break;
-#endif
 
         case SHT30:
         {
@@ -207,7 +171,6 @@ float SensorManager::readSensorValue(const SensorConfig &cfg, SensorReading &rea
     return reading.value;
 }
 
-#if defined(DEVICE_TYPE_ANALOGIC) || defined(DEVICE_TYPE_MODBUS)
 ModbusSensorReading SensorManager::getModbusSensorReading(const ModbusSensorConfig& cfg) {
     ModbusSensorReading reading;
     
@@ -228,29 +191,20 @@ ModbusSensorReading SensorManager::getModbusSensorReading(const ModbusSensorConf
     
     return reading;
 }
-#endif
 
 void SensorManager::getAllSensorReadings(std::vector<SensorReading>& normalReadings,
-#if defined(DEVICE_TYPE_ANALOGIC) || defined(DEVICE_TYPE_MODBUS)
                                         std::vector<ModbusSensorReading>& modbusReadings,
-#endif
-                                        const std::vector<SensorConfig>& enabledNormalSensors
-#if defined(DEVICE_TYPE_ANALOGIC) || defined(DEVICE_TYPE_MODBUS)
-                                        , const std::vector<ModbusSensorConfig>& enabledModbusSensors
-#endif
-                                        ) {
+                                        const std::vector<SensorConfig>& enabledNormalSensors,
+                                        const std::vector<ModbusSensorConfig>& enabledModbusSensors) {
     // Reservar espacio para los vectores
     normalReadings.reserve(enabledNormalSensors.size());
-#if defined(DEVICE_TYPE_ANALOGIC) || defined(DEVICE_TYPE_MODBUS)
     modbusReadings.reserve(enabledModbusSensors.size());
-#endif
     
     // Leer sensores normales
     for (const auto &sensor : enabledNormalSensors) {
         normalReadings.push_back(getSensorReading(sensor));
     }
     
-#if defined(DEVICE_TYPE_ANALOGIC) || defined(DEVICE_TYPE_MODBUS)
     // Si hay sensores Modbus, inicializar comunicación, leerlos y finalizar
     if (!enabledModbusSensors.empty()) {
         // Determinar el tiempo máximo de estabilización necesario
@@ -278,11 +232,9 @@ void SensorManager::getAllSensorReadings(std::vector<SensorReading>& normalReadi
         }
         
         // Encender alimentación de 12V para sensores Modbus
-#if defined(DEVICE_TYPE_MODBUS) || defined(DEVICE_TYPE_ANALOGIC)
         powerManager.power12VOn();
         DEBUG_PRINTF("Esperando %u ms para estabilización de sensores Modbus\n", maxStabilizationTime);
         delay(maxStabilizationTime);
-#endif
         
         // Inicializar comunicación Modbus antes de comenzar las mediciones
         ModbusSensorManager::beginModbus();
@@ -296,13 +248,6 @@ void SensorManager::getAllSensorReadings(std::vector<SensorReading>& normalReadi
         ModbusSensorManager::endModbus();
         
         // Apagar alimentación de 12V después de completar las lecturas
-#if defined(DEVICE_TYPE_MODBUS) || defined(DEVICE_TYPE_ANALOGIC)
         powerManager.power12VOff();
-#endif
     }
-#endif
 }
-
-#ifdef DEVICE_TYPE_ANALOGIC
-// Las funciones de sensores se han movido a sus propias clases
-#endif

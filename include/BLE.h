@@ -63,7 +63,6 @@ private:
         void onRead(BLECharacteristic *pCharacteristic) override;
     };
 
-#ifdef DEVICE_TYPE_ANALOGIC
     // Callback para NTC 100K
     class NTC100KConfigCallback: public BLECharacteristicCallbacks {
         void onWrite(BLECharacteristic *pCharacteristic) override;
@@ -87,15 +86,12 @@ private:
         void onWrite(BLECharacteristic *pCharacteristic) override;
         void onRead(BLECharacteristic *pCharacteristic) override;
     };
-#endif
 
     // Callback para configuración de sensores
-#if defined(DEVICE_TYPE_BASIC) || defined(DEVICE_TYPE_ANALOGIC) || defined(DEVICE_TYPE_MODBUS)
     class SensorsConfigCallback: public BLECharacteristicCallbacks {
         void onWrite(BLECharacteristic *pCharacteristic) override;
         void onRead(BLECharacteristic *pCharacteristic) override;
     };
-#endif
 
     // Callback para configuración de LoRa
     class LoRaConfigCallback: public BLECharacteristicCallbacks {

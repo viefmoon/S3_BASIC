@@ -1,7 +1,5 @@
 #include "sensors/ConductivitySensor.h"
 
-#ifdef DEVICE_TYPE_ANALOGIC
-
 #include <cmath>
 #include "ADS124S08.h"
 #include "AdcUtilities.h"
@@ -76,6 +74,4 @@ float ConductivitySensor::read() {
     // Convertir a conductividad con compensación de temperatura
     float tdsValue = convertVoltageToConductivity(voltage, waterTemp);
     return tdsValue;
-}
-
-#endif // DEVICE_TYPE_ANALOGIC 
+} 

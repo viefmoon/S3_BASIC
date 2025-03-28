@@ -6,8 +6,6 @@
 #include "debug.h"
 #include "config_manager.h"
 
-#ifdef DEVICE_TYPE_ANALOGIC
-
 /**
  * @brief Clase para manejar el sensor de pH
  */
@@ -29,7 +27,5 @@ public:
      */
     static float convertVoltageToPH(float voltage, float tempC);
 };
-
-#endif // DEVICE_TYPE_ANALOGIC
 
 #endif // PH_SENSOR_H 

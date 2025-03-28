@@ -125,7 +125,6 @@ BLEService* BLEHandler::setupService(BLEServer* pServer) {
     );
     pSystemChar->setCallbacks(new SystemConfigCallback());
 
-#ifdef DEVICE_TYPE_ANALOGIC
     // Para dispositivo analógico, se utilizan todas las callbacks
     
     // Característica para configuración NTC 100K
@@ -155,16 +154,13 @@ BLEService* BLEHandler::setupService(BLEServer* pServer) {
         BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_WRITE
     );
     pPHChar->setCallbacks(new PHConfigCallback());
-#endif
 
-    // Característica para configuración de Sensores - común para BASIC y ANALOGIC
-#if defined(DEVICE_TYPE_BASIC) || defined(DEVICE_TYPE_ANALOGIC) || defined(DEVICE_TYPE_MODBUS)
+    // Característica para configuración de Sensores
     BLECharacteristic* pSensorsChar = pService->createCharacteristic(
         BLEUUID(BLE_CHAR_SENSORS_UUID),
         BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_WRITE
     );
     pSensorsChar->setCallbacks(new SensorsConfigCallback());
-#endif
     
     // Característica para configuración de LoRa - común para todos los tipos
     BLECharacteristic* pLoRaConfigChar = pService->createCharacteristic(
@@ -229,7 +225,6 @@ void BLEHandler::SystemConfigCallback::onRead(BLECharacteristic *pCharacteristic
     pCharacteristic->setValue(jsonString.c_str());
 }
 
-#ifdef DEVICE_TYPE_ANALOGIC
 // Implementación de NTC100KConfigCallback
 void BLEHandler::NTC100KConfigCallback::onWrite(BLECharacteristic *pCharacteristic) {
     DEBUG_PRINTLN(F("DEBUG: NTC100KConfigCallback onWrite - JSON recibido:"));
@@ -529,9 +524,7 @@ void BLEHandler::PHConfigCallback::onRead(BLECharacteristic *pCharacteristic) {
     DEBUG_PRINTLN(jsonString);
     pCharacteristic->setValue(jsonString.c_str());
 }
-#endif // DEVICE_TYPE_ANALOGIC
 
-#if defined(DEVICE_TYPE_BASIC) || defined(DEVICE_TYPE_ANALOGIC) || defined(DEVICE_TYPE_MODBUS)
 // Implementación de SensorsConfigCallback
 void BLEHandler::SensorsConfigCallback::onWrite(BLECharacteristic *pCharacteristic) {
     DEBUG_PRINTLN(F("DEBUG: SensorsConfigCallback onWrite - JSON recibido:"));
@@ -601,7 +594,6 @@ void BLEHandler::SensorsConfigCallback::onRead(BLECharacteristic *pCharacteristi
     DEBUG_PRINTLN(jsonString);
     pCharacteristic->setValue(jsonString.c_str());
 }
-#endif
 
 // Implementación de LoRaConfigCallback
 void BLEHandler::LoRaConfigCallback::onWrite(BLECharacteristic* pCharacteristic) {

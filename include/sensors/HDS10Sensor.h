@@ -5,8 +5,6 @@
 #include "config.h"
 #include "debug.h"
 
-#ifdef DEVICE_TYPE_ANALOGIC
-
 /**
  * @brief Clase para manejar el sensor de humedad HDS10
  */
@@ -28,7 +26,5 @@ public:
      */
     static float convertResistanceToHumidity(float resistance);
 };
-
-#endif // DEVICE_TYPE_ANALOGIC
 
 #endif // HDS10_SENSOR_H 

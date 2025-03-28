@@ -36,14 +36,12 @@ public:
     static std::vector<SensorConfig> getAllSensorConfigs();
     static std::vector<SensorConfig> getEnabledSensorConfigs();
 
-#if defined(DEVICE_TYPE_ANALOGIC) || defined(DEVICE_TYPE_MODBUS)
     /* =========================================================================
        CONFIGURACIÓN DE SENSORES MODBUS
        ========================================================================= */
     static void setModbusSensorsConfigs(const std::vector<ModbusSensorConfig>& configs);
     static std::vector<ModbusSensorConfig> getAllModbusSensorConfigs();
     static std::vector<ModbusSensorConfig> getEnabledModbusSensorConfigs();
-#endif
     
     /* =========================================================================
        CONFIGURACIÓN DE LORA
@@ -55,9 +53,8 @@ public:
         const String &nwkKey, 
         const String &appKey);
     
-#ifdef DEVICE_TYPE_ANALOGIC
     /* =========================================================================
-       CONFIGURACIÓN DE SENSORES ANALÓGICOS (Solo para dispositivo analógico)
+       CONFIGURACIÓN DE SENSORES ANALÓGICOS
        ========================================================================= */
     // NTC 100K
     static void getNTC100KConfig(double& t1, double& r1, double& t2, double& r2, double& t3, double& r3);
@@ -76,13 +73,10 @@ public:
     // pH
     static void getPHConfig(float& v1, float& t1, float& v2, float& t2, float& v3, float& t3, float& defaultTemp);
     static void setPHConfig(float v1, float t1, float v2, float t2, float v3, float t3, float defaultTemp);
-#endif
 
 private:
     // Configuraciones por defecto
     static const SensorConfig defaultConfigs[]; // Configs no-Modbus
-#if defined(DEVICE_TYPE_ANALOGIC) || defined(DEVICE_TYPE_MODBUS)
     static const ModbusSensorConfig defaultModbusSensors[]; // Configs Modbus
-#endif
 };
 

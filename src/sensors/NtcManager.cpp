@@ -4,7 +4,6 @@
 #include "debug.h"
 #include "config.h"  // Para acceder a NTC_TEMP_MIN y NTC_TEMP_MAX
 
-#ifdef DEVICE_TYPE_ANALOGIC
 #include "ADS124S08.h"
 #include "AdcUtilities.h"
 extern ADS124S08 ADC;
@@ -204,6 +203,4 @@ double NtcManager::readNtc10kTemperature() {
     }
     
     return tempC;
-}
-
-#endif // DEVICE_TYPE_ANALOGIC 
+} 
