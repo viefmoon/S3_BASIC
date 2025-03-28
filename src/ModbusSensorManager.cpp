@@ -1,5 +1,5 @@
 #include "ModbusSensorManager.h"
-#include "config.h"    // Para SERIAL_BAUD
+#include "config.h"    // Para MODBUS_BAUD_RATE y MODBUS_SERIAL_CONFIG
 
 #if defined(DEVICE_TYPE_ANALOGIC) || defined(DEVICE_TYPE_MODBUS)
 
@@ -12,6 +12,9 @@
 // Crear una instancia global de ModbusMaster
 ModbusMaster modbus;
 
+// Definir Serial2 para la comunicación Modbus
+HardwareSerial modbusSerial(2); // Usar Serial2 para comunicación Modbus
+
 /**
  * @note 
  *  - Se usa la biblioteca ModbusMaster para la comunicación Modbus
@@ -20,16 +23,16 @@ ModbusMaster modbus;
  */
 
 void ModbusSensorManager::beginModbus() {
-    // Configurar Serial usando los parámetros definidos en config.h
-    Serial.begin(MODBUS_BAUDRATE, MODBUS_SERIAL_CONFIG);
+    // Configurar Serial2 usando los parámetros definidos en config.h
+    modbusSerial.begin(MODBUS_BAUD_RATE, MODBUS_SERIAL_CONFIG, MODBUS_RX_PIN, MODBUS_TX_PIN);
     
-    // Inicializar ModbusMaster
-    modbus.begin(0, Serial); // El slave ID se configurará en cada petición
+    // Inicializar ModbusMaster con Serial2
+    modbus.begin(0, modbusSerial); // El slave ID se configurará en cada petición
 }
 
 void ModbusSensorManager::endModbus() {
-    // Finalizar la comunicación Serial de Modbus
-    Serial.end();
+    // Finalizar la comunicación Serial2 de Modbus
+    modbusSerial.end();
 }
 
 bool ModbusSensorManager::readHoldingRegisters(uint8_t address, uint16_t startReg, uint16_t numRegs, uint16_t* outData) {
@@ -37,7 +40,7 @@ bool ModbusSensorManager::readHoldingRegisters(uint8_t address, uint16_t startRe
     uint8_t result;
     
     // Establecer el slave ID
-    modbus.begin(address, Serial);
+    modbus.begin(address, modbusSerial);
     
     // Implementar reintentos de lectura
     for (uint8_t retry = 0; retry < MODBUS_MAX_RETRY; retry++) {

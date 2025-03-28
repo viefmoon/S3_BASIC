@@ -7,34 +7,44 @@
 #define DEBUG_ENABLED
 
 // Pines generales
-#define ONE_WIRE_BUS        1
-#define I2C_SDA_PIN         19
-#define I2C_SCL_PIN         18
+#define ONE_WIRE_BUS        38
+#define I2C_SDA_PIN         48
+#define I2C_SCL_PIN         47
 
-// SPI
-#define SPI_SCK_PIN         10
-#define SPI_MISO_PIN        6
-#define SPI_MOSI_PIN        7
-#define SPI_RTD_CLOCK       1000000
-#define SPI_RADIO_CLOCK     100000
+// Pines analógicos para sensores
+#define NTC100K_0_PIN       3  // IO3
+#define NTC100K_1_PIN       5  // IO5 
+#define NTC10K_PIN          6  // IO6 
+#define PH_SENSOR_PIN       17  // IO17 
+#define COND_SENSOR_PIN     20  // IO20 
+#define HDS10_SENSOR_PIN    7  // IO7 
+#define BATTERY_SENSOR_PIN  1  // IO1 
+#define SOILH_SENSOR_PIN    2  // IO2 // Pin para el sensor de humedad del suelo
+
+// SPI PARA LORA
+#define SPI_LORA_SCK_PIN        9
+#define SPI_LORA_MISO_PIN       11
+#define SPI_LORA_MOSI_PIN       10
+#define LORA_NSS_PIN            8
+#define LORA_BUSY_PIN           13
+#define LORA_RST_PIN            12
+#define LORA_DIO1_PIN           14
+#define MAX_LORA_PAYLOAD        200
+
+// SPI Clock
+#define SPI_LORA_CLOCK       1000000
+#define SPI_RTD_CLOCK        1000000
 
 // PT100
-#define PT100_CS_PIN        12
+#define PT100_CS_PIN        46
 
 // Modo Config
 #define CONFIG_PIN          2
 #define CONFIG_TRIGGER_TIME 5000
 #define CONFIG_TIMEOUT      30000
-#define CONFIG_LED_PIN      9
+#define CONFIG_LED_PIN      35
 #define CONFIG_BLE_WAIT_TIMEOUT     60000   // Tiempo máximo de espera para conexión BLE (60 segundos)
 #define CONFIG_BLE_MAX_CONN_TIME    300000  // Tiempo máximo de conexión BLE activa (5 minutos)
-
-// LoRa
-#define LORA_NSS_PIN        8
-#define LORA_BUSY_PIN       4
-#define LORA_RST_PIN        5
-#define LORA_DIO1_PIN       3
-#define MAX_LORA_PAYLOAD    200
 
 // Serial
 #define SERIAL_BAUD_RATE         115200
@@ -102,7 +112,9 @@ const double conversionFactor = (R1 + R2) / R1;
 #define KEY_MODBUS_SENSOR_ENABLE "e"
 
 // Configuración Modbus
-#define MODBUS_BAUDRATE         9600
+#define MODBUS_RX_PIN           21
+#define MODBUS_TX_PIN           26
+#define MODBUS_BAUD_RATE        9600
 #define MODBUS_SERIAL_CONFIG    SERIAL_8N1
 #define MODBUS_RESPONSE_TIMEOUT 300  // Tiempo de espera para respuesta en ms
 #define MODBUS_MAX_RETRY        3     // Número máximo de intentos de lectura Modbus
@@ -114,19 +126,12 @@ const double conversionFactor = (R1 + R2) / R1;
 #define JSON_DOC_SIZE_LARGE   2048
 
 // Batería
-#define POWER_3V3_PIN           1
-#define POWER_12V_PIN           2
+#define POWER_3V3_PIN           36
+#define POWER_12V_PIN           19
 #define POWER_STABILIZE_DELAY   1
 
-// ADS124S08
-#define ADS124S08_CS_PIN        1
-#define ADS124S08_DRDY_PIN      2
-#define ADS124S08_RST_PIN       3
-#define ADS124S08_START_PIN     4
-#define SPI_ADC_CLOCK           1000000
-
 // FlowSensor
-#define FLOW_SENSOR_PIN         8
+#define FLOW_SENSOR_PIN         4
 
 // Namespaces analógicos
 #define NAMESPACE_NTC100K   "ntc_100k"
@@ -214,7 +219,7 @@ const double conversionFactor = (R1 + R2) / R1;
     {"5", "SM1",   SOILH, true}, \
     {"8", "PH",    PH, true}, \
     {"R", "RTD1",  RTD, true}, \
-    {"D", "DS1",   DS18B20, false}, \
+    {"D", "DS1",   DS18B20, true}, \
     {"I2C", "SHT30", SHT30, true} \
 }
 

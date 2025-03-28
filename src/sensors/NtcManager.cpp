@@ -4,10 +4,6 @@
 #include "debug.h"
 #include "config.h"  // Para acceder a NTC_TEMP_MIN y NTC_TEMP_MAX
 
-#include "ADS124S08.h"
-#include "AdcUtilities.h"
-extern ADS124S08 ADC;
-
 void NtcManager::calculateSteinhartHartCoeffs(double T1, double R1,
                                           double T2, double R2,
                                           double T3, double R3,
@@ -63,29 +59,6 @@ double NtcManager::steinhartHartTemperature(double resistance, double A, double 
     return tempC;
 }
 
-double NtcManager::computeNtcResistanceFromBridge(double diffVoltage)
-{
-    // La rama de referencia es 1.25 V. 
-    // diffVoltage = (Vneg - 1.25)
-    
-    // Corregimos la interpretación del voltaje diferencial:
-    // Para NTC, cuando la temperatura aumenta, la resistencia disminuye y el voltaje Vneg aumenta
-    // Por lo tanto, diffVoltage aumenta con la temperatura
-    
-    // Vneg = diffVoltage + 1.25
-    double Vneg = diffVoltage + 1.25;
-    
-    // Validación de rangos
-    if (Vneg <= 0.0 || Vneg >= 2.5) {
-        return -1.0;  // Indica valor inválido
-    }
-    
-    // Fórmula corregida: Si Vneg aumenta (mayor temperatura), Rntc debe disminuir
-    double Rntc = 100000.0 * ((2.5 - Vneg) / Vneg);
-    
-    return Rntc;
-}
-
 double NtcManager::computeNtcResistanceFromVoltageDivider(double voltage, double vRef, double rFixed, bool ntcTop)
 {
     // Validación de rangos
@@ -123,27 +96,37 @@ double NtcManager::readNtc100kTemperature(const char* configKey) {
     double A=0, B=0, C=0;
     calculateSteinhartHartCoeffs(T1K, r1, T2K, r2, T3K, r3, A, B, C);
     
-    // Elegir canal según sensorId: "NTC1" => AIN1+/AIN0-, "NTC2" => AIN3+/AIN2-
-    uint8_t muxConfig = 0; 
+    // Seleccionar el pin correcto según el configKey
+    int ntcPin = -1;
     if (strcmp(configKey, "0") == 0) {
         DEBUG_PRINTLN("NTC100K 0");
-        muxConfig = ADS_P_AIN1 | ADS_N_AIN0;  // AIN1+ / AIN0-
+        ntcPin = NTC100K_0_PIN;
     } else if (strcmp(configKey, "1") == 0) {
         DEBUG_PRINTLN("NTC100K 1");
-        muxConfig = ADS_P_AIN3 | ADS_N_AIN2;  // AIN3+ / AIN2-
+        ntcPin = NTC100K_1_PIN;
     } else {
-        // Si no coincide con "NTC1" ni "NTC2", retornamos NAN
+        // Si no coincide con ninguna configuración, retornamos NAN
         return NAN;
     }
 
-    // Medir voltaje diferencial
-    float diffVoltage = AdcUtilities::measureAdcDifferential(muxConfig);
-    if (isnan(diffVoltage)) {
+    // Leer el valor analógico
+    int adcValue = analogRead(ntcPin);
+    
+    // Convertir el valor ADC a voltaje (0-3.3V con resolución de 12 bits)
+    float voltage = adcValue * (3.3f / 4095.0f);
+    
+    if (isnan(voltage) || voltage <= 0.0f || voltage >= 3.3f) {
         return NAN;
     }
 
+    // El NTC100K está conectado como parte de un divisor de voltaje:
+    // 3.3V --- NTC100K --- [Punto de medición] --- 100K --- GND
+    double vRef = 3.3; // Voltaje de referencia
+    double rFixed = 100000.0; // Resistencia fija (100k)
+    bool ntcTop = true; // NTC está conectado a Vref (arriba)
+    
     // Calcular la resistencia NTC en ohms
-    double Rntc = computeNtcResistanceFromBridge(diffVoltage);
+    double Rntc = computeNtcResistanceFromVoltageDivider(voltage, vRef, rFixed, ntcTop);
     if (Rntc <= 0.0) {
         return NAN;
     }
@@ -174,18 +157,18 @@ double NtcManager::readNtc10kTemperature() {
     double A=0, B=0, C=0;
     calculateSteinhartHartCoeffs(T1K, r1, T2K, r2, T3K, r3, A, B, C);
 
-    // NTC3 está en el canal AIN11 con AINCOM
-    uint8_t muxConfig = ADS_P_AIN11 | ADS_N_AIN8;
+    // Leer el valor analógico del pin NTC10K
+    int adcValue = analogRead(NTC10K_PIN);
     
-    // Medir voltaje single-ended
-    float voltage = AdcUtilities::measureAdcDifferential(muxConfig);
-    if (isnan(voltage)) {
+    // Convertir el valor ADC a voltaje (0-3.3V con resolución de 12 bits)
+    float voltage = adcValue * (3.3f / 4095.0f);
+    
+    if (isnan(voltage) || voltage <= 0.0f || voltage >= 3.3f) {
         return NAN;
     }
 
-    // Calcular la resistencia NTC
-    // El NTC en NTC3 está conectado entre 2.5V y el punto medio con resistencia de 10k a GND
-    double vRef = 2.5; // Voltaje de referencia
+    // El NTC10K está conectado entre 3.3V y el punto medio con resistencia de 10k a GND
+    double vRef = 3.3; // Voltaje de referencia
     double rFixed = 10000.0; // Resistencia fija (10k)
     bool ntcTop = true; // NTC está conectado a Vref (arriba)
     

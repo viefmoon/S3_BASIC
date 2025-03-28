@@ -16,4 +16,5 @@ float DS18B20Sensor::read() {
     return temp;
 }
 
+
 #endif // defined(DEVICE_TYPE_BASIC) || defined(DEVICE_TYPE_ANALOGIC) 

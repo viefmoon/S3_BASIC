@@ -1,12 +1,8 @@
 #include "sensors/ConductivitySensor.h"
 
 #include <cmath>
-#include "ADS124S08.h"
-#include "AdcUtilities.h"
 #include "sensors/NtcManager.h"
-
-// Variables globales declaradas en main.cpp
-extern ADS124S08 ADC;
+#include "config.h"
 
 /**
  * @brief Convierte el voltaje medido a valor de conductividad/TDS en ppm
@@ -49,22 +45,19 @@ float ConductivitySensor::convertVoltageToConductivity(float voltage, float temp
 }
 
 /**
- * @brief Lee el sensor de conductividad conectado al canal AIN6 del ADC
+ * @brief Lee el sensor de conductividad conectado al pin analógico
  * 
  * @return float Valor de conductividad/TDS en ppm, o NAN si hay error
  */
 float ConductivitySensor::read() {
-    // Asegurarse de que el ADC esté despierto
-    ADC.sendCommand(WAKE_OPCODE_MASK);
+    // Leer el valor del pin analógico
+    int adcValue = analogRead(COND_SENSOR_PIN);
     
-    // Configurar el multiplexor para leer AIN6 con referencia a AINCOM (tierra)
-    uint8_t muxConfig = ADS_P_AIN6 | ADS_N_AINCOM;
-    
-    // Realizar una única lectura del sensor
-    float voltage = AdcUtilities::measureAdcDifferential(muxConfig);
+    // Convertir el valor ADC a voltaje (0-3.3V con resolución de 12 bits)
+    float voltage = adcValue * (3.3f / 4095.0f);
     
     // Verificar si el voltaje es válido
-    if (isnan(voltage) || voltage <= 0.0f || voltage >= 2.5f) {
+    if (isnan(voltage) || voltage <= 0.0f || voltage >= 3.3f) {
         return NAN;
     }
     

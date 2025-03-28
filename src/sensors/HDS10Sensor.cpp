@@ -1,11 +1,7 @@
 #include "sensors/HDS10Sensor.h"
 
 #include <cmath>
-#include "ADS124S08.h"
-#include "AdcUtilities.h"
-
-// Variables globales declaradas en main.cpp
-extern ADS124S08 ADC;
+#include "config.h"
 
 /**
  * @brief Convierte la resistencia del sensor HDS10 a porcentaje de humedad usando interpolación logarítmica
@@ -55,36 +51,33 @@ float HDS10Sensor::convertResistanceToHumidity(float sensorR) {
 }
 
 /**
- * @brief Lee el sensor HDS10 conectado al canal AIN5/AIN8 del ADC
+ * @brief Lee el sensor HDS10 conectado al pin analógico
  * 
  * @return float Porcentaje de humedad (0-100%) según calibración definida
  *               o NAN si ocurre un error o no es posible leer
  */
 float HDS10Sensor::read() {
-    // Asegurarse de que el ADC esté despierto
-    ADC.sendCommand(WAKE_OPCODE_MASK);
+    // Leer el valor del pin analógico
+    int adcValue = analogRead(HDS10_SENSOR_PIN);
     
-    // Configurar el multiplexor para leer AIN5 con referencia a AIN8
-    uint8_t muxConfig = ADS_P_AIN5 | ADS_N_AIN8;
-    
-    // Usar AdcUtilities para leer el voltaje diferencial
-    float voltage = AdcUtilities::measureAdcDifferential(muxConfig);
+    // Convertir el valor ADC a voltaje (0-3.3V con resolución de 12 bits)
+    float voltage = adcValue * (3.3f / 4095.0f);
     
     // Verificar si el voltaje está en rango válido
-    if (voltage <= 0.0f || voltage >= 2.5f) {
+    if (voltage <= 0.0f || voltage >= 3.3f) {
         return NAN; // Valor fuera de rango
     }
     
-    // Calcular la resistencia del sensor basado en el divisor de voltaje correcto
-    // El circuito es: 2.5V --- R1(220K) --- [Punto de medición] --- R2(220K) --- HDS10 --- GND
+    // Calcular la resistencia del sensor basado en el divisor de voltaje
+    // El circuito es: 3.3V --- R1(220K) --- [Punto de medición] --- R2(220K) --- HDS10 --- GND
     // Y estamos midiendo la caída de voltaje en R2+HDS10
     
     float r1 = 220000.0f; // Primera resistencia de 220K
     float r2 = 220000.0f; // Segunda resistencia de 220K
     
     // Calculamos la corriente en el circuito (que es la misma en toda la serie)
-    // I = (2.5V - voltage) / R1
-    float current = (2.5f - voltage) / r1;
+    // I = (3.3V - voltage) / R1
+    float current = (3.3f - voltage) / r1;
     
     // El voltaje medido es la caída en R2+HDS10
     // voltage = I * (R2 + HDS10)

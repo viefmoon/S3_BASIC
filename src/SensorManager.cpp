@@ -11,13 +11,12 @@
 #include "debug.h"
 #include "utilities.h"
 
-#include "ADS124S08.h"
+// Eliminadas las inclusiones de "ADS124S08.h" y "AdcUtilities.h"
 #include "sensors/NtcManager.h"
-#include "AdcUtilities.h"
 #include "sensors/PHSensor.h"
 #include "sensors/ConductivitySensor.h"
 #include "sensors/HDS10Sensor.h"
-extern ADS124S08 ADC;
+// Se eliminó la variable externa ADC
 
 // Inclusión de nuevos sensores
 #include "sensors/RTDSensor.h"
@@ -32,7 +31,6 @@ void SensorManager::beginSensors(const std::vector<SensorConfig>& enabledNormalS
     // Encender alimentación 3.3V
     powerManager.power3V3On();
     
-
     // Inicializar RTD y configurarlo
     rtd.begin();
     {
@@ -63,24 +61,30 @@ void SensorManager::beginSensors(const std::vector<SensorConfig>& enabledNormalS
         // Inicializar DS18B20
         dallasTemp.begin();
         dallasTemp.requestTemperatures();
+        DEBUG_PRINTLN("DS18B20 inicializado");
     }
 
-    // TIEMPO ejecución ≈ 15 ms
-    ADC.begin();
-    // Reset del ADC
-    ADC.sendCommand(RESET_OPCODE_MASK);
-    delay(1);
-    // Asegurarse de que el ADC esté despierto
-    ADC.sendCommand(WAKE_OPCODE_MASK);
+    // Configurar los pines analógicos para cada sensor
+    // NTC100K 0 - Pin A0
+    pinMode(NTC100K_0_PIN, INPUT);
+    // NTC100K 1 - Pin A3
+    pinMode(NTC100K_1_PIN, INPUT);
+    // NTC10K - Pin A4
+    pinMode(NTC10K_PIN, INPUT);
+    // PH Sensor - Pin A5
+    pinMode(PH_SENSOR_PIN, INPUT);
+    // Conductivity Sensor - Pin A6
+    pinMode(COND_SENSOR_PIN, INPUT);
+    // HDS10 Sensor - Pin A7
+    pinMode(HDS10_SENSOR_PIN, INPUT);
+    // Battery Sensor - Pin A8
+    pinMode(BATTERY_SENSOR_PIN, INPUT);
+    // Soil Humidity Sensor
+    pinMode(SOILH_SENSOR_PIN, INPUT);
 
-    // Configurar ADC con referencia interna
-    ADC.regWrite(REF_ADDR_MASK, ADS_REFINT_ON_ALWAYS | ADS_REFSEL_INT);
-    
-    // Deshabilitar PGA (bypass)
-    ADC.regWrite(PGA_ADDR_MASK, ADS_PGA_BYPASS); // PGA_EN = 0, ganancia ignorada
-    
-    // Ajustar velocidad de muestreo y modo single shot
-    ADC.regWrite(DATARATE_ADDR_MASK, ADS_DR_4000 | ADS_CONVMODE_SS); // Modo single shot
+    // Configurar ADC interno
+    analogReadResolution(12); // Resolución de 12 bits (0-4095)
+    analogSetAttenuation(ADC_11db); // Atenuación para medir hasta 3.3V
 }
 
 SensorReading SensorManager::getSensorReading(const SensorConfig &cfg) {
@@ -126,7 +130,21 @@ float SensorManager::readSensorValue(const SensorConfig &cfg, SensorReading &rea
             break;
         
         case SOILH:
-            reading.value = NAN; 
+            {
+                // Leer el valor del pin analógico
+                int adcValue = analogRead(SOILH_SENSOR_PIN);
+                
+                // Convertir el valor ADC a voltaje (0-3.3V con resolución de 12 bits)
+                float voltage = adcValue * (3.3f / 4095.0f);
+                
+                // Verificar si el voltaje está en rango válido
+                if (voltage <= 0.0f || voltage >= 3.3f) {
+                    reading.value = NAN;
+                } else {
+                    // Convertir el voltaje a porcentaje (0V = 0%, 3.3V = 100%)
+                    reading.value = (voltage / 3.3f) * 100.0f;
+                }
+            }
             break;
 
         case RTD:

@@ -26,7 +26,6 @@
 #include <SensirionI2cSht3x.h>
 #include "LoRaManager.h"
 #include "BLE.h"
-#include "ADS124S08.h"
 #include "HardwareManager.h"
 #include "SleepManager.h"
 #include "SHT31.h"
@@ -51,10 +50,8 @@ ESP32Time rtc;
 PowerManager powerManager;
 
 SPIClass spi(FSPI);
-SPISettings spiAdcSettings(SPI_ADC_CLOCK, MSBFIRST, SPI_MODE1);
-ADS124S08 ADC(spi, spiAdcSettings);
 SPISettings spiRtdSettings(SPI_RTD_CLOCK, MSBFIRST, SPI_MODE1);
-SPISettings spiRadioSettings(SPI_RADIO_CLOCK, MSBFIRST, SPI_MODE0);
+SPISettings spiRadioSettings(SPI_LORA_CLOCK, MSBFIRST, SPI_MODE0);
 
 MAX31865_RTD rtd(MAX31865_RTD::RTD_PT100, spi, spiRtdSettings, PT100_CS_PIN);
 SHT31 sht30Sensor(0x44, &Wire);
@@ -74,7 +71,7 @@ Preferences store;
 // setup()
 //--------------------------------------------------------------------------------------------
 void setup() {
-    setupStartTime = millis(); // Inicia el contador de tiempo
+    // setupStartTime = millis(); // Inicia el contador de tiempo
     DEBUG_BEGIN(SERIAL_BAUD_RATE);
 
     SleepManager::releaseHeldPins();
@@ -142,6 +139,7 @@ void setup() {
 // loop()
 //--------------------------------------------------------------------------------------------
 void loop() {
+
     // Verificar si se mantiene presionado para modo config
     if (BLEHandler::checkConfigMode()) {
         return;

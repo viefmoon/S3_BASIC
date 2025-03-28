@@ -14,12 +14,12 @@ void PowerManager::begin() {
 }
 
 void PowerManager::power3V3On() {
-    digitalWrite(POWER_3V3_PIN, HIGH);
+    digitalWrite(POWER_3V3_PIN, LOW);
     delay(POWER_STABILIZE_DELAY);
 }
 
 void PowerManager::power3V3Off() {
-    digitalWrite(POWER_3V3_PIN, LOW);
+    digitalWrite(POWER_3V3_PIN, HIGH);
 }
 
 void PowerManager::power12VOn() {

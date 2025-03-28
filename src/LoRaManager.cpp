@@ -385,18 +385,17 @@ void LoRaManager::sendDelimitedPayload(
     uint32_t timestamp = rtc.getEpoch();
 
     // Crear payload
-    char buffer[MAX_PAYLOAD];
     size_t payloadSize = createDelimitedPayload(
         readings, 
         deviceId, 
         stationId, 
         battery, 
         timestamp, 
-        buffer, 
-        sizeof(buffer)
+        payloadBuffer, 
+        sizeof(payloadBuffer)
     );
     
-    DEBUG_PRINTF("Enviando payload delimitado con tamaño %d bytes\n", payloadLength);
+    DEBUG_PRINTF("Enviando payload delimitado con tamaño %d bytes\n", payloadSize);
     DEBUG_PRINTLN(payloadBuffer);
     
     // Enviar
@@ -406,7 +405,7 @@ void LoRaManager::sendDelimitedPayload(
     
     int16_t state = node.sendReceive(
         (uint8_t*)payloadBuffer, 
-        payloadLength, 
+        payloadSize, 
         fPort, 
         downlinkPayload, 
         &downlinkSize
@@ -449,7 +448,6 @@ void LoRaManager::sendDelimitedPayload(
     uint32_t timestamp = rtc.getEpoch();
 
     // Crear payload
-    char buffer[MAX_PAYLOAD];
     size_t payloadSize = createDelimitedPayload(
         normalReadings, 
         modbusReadings, 
@@ -457,11 +455,11 @@ void LoRaManager::sendDelimitedPayload(
         stationId, 
         battery, 
         timestamp, 
-        buffer, 
-        sizeof(buffer)
+        payloadBuffer, 
+        sizeof(payloadBuffer)
     );
     
-    DEBUG_PRINTF("Enviando payload delimitado con tamaño %d bytes\n", payloadLength);
+    DEBUG_PRINTF("Enviando payload delimitado con tamaño %d bytes\n", payloadSize);
     DEBUG_PRINTLN(payloadBuffer);
     
     // Enviar
@@ -516,7 +514,7 @@ void LoRaManager::sendDelimitedPayload(
 
     int16_t state = node.uplink(
         (uint8_t*)payloadBuffer, 
-        payloadLength, 
+        payloadSize, 
         fPort
     );
     

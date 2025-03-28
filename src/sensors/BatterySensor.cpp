@@ -1,8 +1,5 @@
 #include "sensors/BatterySensor.h"
-
-#include "ADS124S08.h"
-#include "AdcUtilities.h"
-extern ADS124S08 ADC;
+#include "config.h"
 
 /**
  * @brief Lee el voltaje de la batería
@@ -10,14 +7,16 @@ extern ADS124S08 ADC;
  * @return float Voltaje de la batería en voltios, o NAN si hay error
  */
 float BatterySensor::readVoltage() {
-    // Configurar el multiplexor para leer AIN9 con referencia a AINCOM (tierra)
-    uint8_t muxConfig = ADS_P_AIN9 | ADS_N_AINCOM;
+    // Leer el valor del pin analógico para la batería
+    int adcValue = analogRead(BATTERY_SENSOR_PIN);
     
-    // Asegurarse de que el ADC esté despierto
-    ADC.sendCommand(WAKE_OPCODE_MASK);
+    // Convertir el valor ADC a voltaje (0-3.3V con resolución de 12 bits)
+    float voltage = adcValue * (3.3f / 4095.0f);
     
-    // Leer voltaje diferencial entre AIN9 y COMMON
-    float voltage = AdcUtilities::measureAdcDifferential(muxConfig);
+    // Comprobar si el voltaje es válido
+    if (isnan(voltage) || voltage <= 0.0f || voltage >= 3.3f) {
+        return NAN;
+    }
 
     // Calcular el voltaje real de la batería
     float batteryVoltage = calculateBatteryVoltage(voltage);

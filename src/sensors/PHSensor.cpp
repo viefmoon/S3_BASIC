@@ -1,12 +1,8 @@
 #include "sensors/PHSensor.h"
 
 #include <cmath>
-#include "ADS124S08.h"
-#include "AdcUtilities.h"
 #include "sensors/NtcManager.h"
-
-// Variables globales declaradas en main.cpp
-extern ADS124S08 ADC;
+#include "config.h"
 
 /**
  * @brief Convierte el voltaje medido a valor de pH
@@ -62,19 +58,21 @@ float PHSensor::convertVoltageToPH(float voltage, float tempC) {
 }
 
 /**
- * @brief Lee el sensor de pH conectado al canal AIN7 del ADC
+ * @brief Lee el sensor de pH conectado al pin analógico
  * 
  * @return float Valor de pH (0-14), o NAN si hay error
  */
 float PHSensor::read() {
-    // Asegurarse de que el ADC esté despierto
-    ADC.sendCommand(WAKE_OPCODE_MASK);
+    // Leer el valor del pin analógico
+    int adcValue = analogRead(PH_SENSOR_PIN);
     
-    // Configurar el multiplexor para leer AIN7 con referencia a AINCOM (tierra)
-    uint8_t muxConfig = ADS_P_AIN7 | ADS_N_AINCOM;
+    // Convertir el valor ADC a voltaje (0-3.3V con resolución de 12 bits)
+    float voltage = adcValue * (3.3f / 4095.0f);
     
-    // Realizar una única lectura del sensor
-    float voltage = AdcUtilities::measureAdcDifferential(muxConfig);
+    // Ajuste del offset: en el sistema anterior, un pH neutro daba un voltaje
+    // cercano a 0V, pero ahora puede necesitar un offset diferente
+    // dependiendo de cómo esté conectado el circuito
+    voltage = voltage - 1.65f; // Restar punto medio para obtener voltaje diferencial
     
     // Verificar si el voltaje es válido
     if (isnan(voltage) || voltage < -2.5f || voltage > 2.5f) {

@@ -10,19 +10,19 @@
 
 /**
  * @brief Clase para manejar la lectura de sensores Modbus.
- *        Usa Serial por defecto. Asegurarse de no usar debug durante la medición.
+ *        Usa Serial2 con pines configurables para RX/TX.
  *        Utiliza la biblioteca ModbusMaster para comunicación.
  */
 class ModbusSensorManager {
 public:
     /**
-     * @brief Inicializa el bus RS485/Modbus (configura Serial a 9600, 8N1, etc.)
+     * @brief Inicializa el bus RS485/Modbus (configura Serial2 con los pines definidos)
      *        Debe llamarse una sola vez al principio.
      */
     static void beginModbus();
 
     /**
-     * @brief Finaliza la comunicación Modbus (cierra Serial)
+     * @brief Finaliza la comunicación Modbus (cierra Serial2)
      *        Debe llamarse después de completar todas las lecturas Modbus
      */
     static void endModbus();
